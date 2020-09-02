@@ -45,6 +45,7 @@ const getHighScores = () => {
 }
 
 export default () => {
+  const [loaded, setLoaded] = useState(false)
   const [showTab, setShowTab] = useState("menu")
   const [pause, setPause] = useState(false)
   const [sound, setSound] = useState(false)
@@ -59,7 +60,11 @@ export default () => {
     localStorage.setItem("highscores", JSON.stringify(highScores))
   }, [highScores])
 
-  return (
+  useEffect(() => {
+    setLoaded(true)
+  }, [])
+
+  return loaded ? (
     <Container>
       <H1>
         Simply<WrapWord color="orange">Pacman</WrapWord>
@@ -126,5 +131,7 @@ export default () => {
         </Buttons>
       </>
     </Container>
+  ) : (
+    ""
   )
 }
