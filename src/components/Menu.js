@@ -17,7 +17,7 @@ const Button = styled.button`
   color: white;
   :hover {
     cursor: pointer;
-    background-color: #777;
+    border: 1px dashed blue;
   }
 `
 const SmallButton = styled.button`
@@ -28,7 +28,7 @@ const SmallButton = styled.button`
   color: white;
   :hover {
     cursor: pointer;
-    background-color: #777;
+    border: 1px dashed blue;
   }
 `
 

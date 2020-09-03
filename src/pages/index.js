@@ -29,7 +29,7 @@ const Button = styled.button`
   color: white;
   :hover {
     cursor: pointer;
-    background-color: #777;
+    border: 1px dashed blue;
   }
 `
 const Buttons = styled.div`

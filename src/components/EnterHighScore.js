@@ -47,7 +47,7 @@ const Button = styled.button`
   color: white;
   :hover {
     cursor: ${p => (p.disabled ? "not-allowed" : "pointer")};
-    background-color: ${p => (p.disabled ? "#aaa" : "#777")};
+    border: 1px dashed ${p => (p.disabled ? "white" : "blue")};
   }
 `
 
