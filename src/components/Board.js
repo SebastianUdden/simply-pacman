@@ -5,6 +5,7 @@ import { useKeyboardEvent } from "../hooks/useKeyboardEvent"
 import { WALL_COLOR } from "../constants/colors"
 import Pacman from "./Pacman"
 import Dot from "./Dot"
+import { LEVELS } from "../constants/levels"
 
 const CELL_SIZE = 25
 
@@ -29,7 +30,6 @@ const Cell = styled.div`
   background-color: ${p => p.color};
   width: ${p => p.cellSize}px;
   height: ${p => p.cellSize}px;
-  box-shadow: 1px 1px black;
   border-color: ${p => p.borderColor || "#222"};
   border-style: solid;
   border-width: ${p => p.borderWidth || "1px"};
@@ -83,10 +83,9 @@ const Score = styled.span`
 
 const getCellSize = () => {
   if (typeof window === "undefined") return CELL_SIZE
-  return window.innerHeight / 60
+  return window.innerHeight / 85
 }
 
-const getBorder = (columns, i) => i === 0 || i === columns.length - 1
 const getBordersAndMargin = (board, { x, y }) => {
   // Top left
   if (x === 0 && y === 0)
@@ -115,7 +114,10 @@ const getBordersAndMargin = (board, { x, y }) => {
 const getValidPosition = ({ board, x, y }) => {
   if (x === 0 || y === 0) return false
   if (x === board[0].length - 1 || y === board.length - 1) return false
-  return true
+  const wall = board.find(row =>
+    row.find(cell => cell.index.x === x && cell.index.y === y && cell.isWall)
+  )
+  return !wall
 }
 
 const checkEatenDots = (eatenDots, cellIndex, rowIndex) =>
@@ -129,24 +131,32 @@ const addDot = (dots, newDot) => {
 const checkBoardComplete = board =>
   board.every(row => row.every(cell => !cell.isDot))
 
+const checkIsOuterWall = (columns, i) => i === 0 || i === columns.length - 1
+const checkIsInnerWall = (blocks, cell) =>
+  blocks.some(
+    block => block.index.x === cell.index.x && block.index.y === cell.index.y
+  )
+
 export default ({ pause, score, onEndGame, onScoreChange }) => {
-  const width = 20
-  const height = 20
+  const width = 28
+  const height = 31
   const innerRows = [...Array(height).keys()]
   const innerBoard = innerRows.map(y => {
     const columns = [...Array(width).keys()]
     return columns.map((x, i) => ({
       color: "black",
       index: { x, y },
-      blocked: i === 0 || columns.length - 1,
+      isDot: true,
     }))
   })
+  const [showBoard, setShowBoard] = useState(false)
   const [board, setBoard] = useState(innerBoard)
   const [cellSize, setCellSize] = useState(CELL_SIZE)
-  const [x_pos, setX_pos] = useState(4)
-  const [y_pos, setY_pos] = useState(4)
+  const [x_pos, setX_pos] = useState(0)
+  const [y_pos, setY_pos] = useState(1)
   const [lvl, setLvl] = useState(1)
   const [eatenDots, setEatenDots] = useState([])
+  const [walls, setWalls] = useState([])
 
   const resetBoard = () => {
     setBoard(innerBoard)
@@ -191,11 +201,6 @@ export default ({ pause, score, onEndGame, onScoreChange }) => {
   }, [eatenDots])
 
   useEffect(() => {
-    setEatenDots(addDot(eatenDots, { x: x_pos, y: y_pos }))
-    if (eatenDots.length !== 0 && checkBoardComplete(board)) {
-      setLvl(lvl + 1)
-      resetBoard()
-    }
     setBoard(
       board.map((row, rowIndex) =>
         row.map((cell, cellIndex) => {
@@ -206,24 +211,72 @@ export default ({ pause, score, onEndGame, onScoreChange }) => {
               content: <Pacman />,
             }
           }
-          const isWall = getBorder(row, cellIndex) || getBorder(board, rowIndex)
+          const isOuterWall =
+            checkIsOuterWall(row, cellIndex) ||
+            checkIsOuterWall(board, rowIndex)
           const isEatenDot = checkEatenDots(eatenDots, cellIndex, rowIndex)
+          const isDot = !isEatenDot
           const bordersAndMargin = getBordersAndMargin(board, cell.index)
+          const isInnerWall = checkIsInnerWall(walls, cell)
+          if (isInnerWall) {
+            return {
+              ...cell,
+              content: undefined,
+              borderColor: WALL_COLOR,
+              borderWidth: "1px 1px 1px 1px",
+              margin: 0,
+              isDot: false,
+              isWall: true,
+            }
+          }
+          if (isOuterWall) {
+            return {
+              ...cell,
+              content: undefined,
+              borderColor: WALL_COLOR,
+              borderWidth: bordersAndMargin.border,
+              margin: bordersAndMargin.margin,
+              isDot: false,
+              isWall: true,
+            }
+          }
           return {
             ...cell,
-            margin: bordersAndMargin.margin,
-            borderColor: isWall ? WALL_COLOR : "black",
+            content: isDot && <Dot />,
             borderWidth: bordersAndMargin.border,
-            isDot: !isWall && !isEatenDot,
-            content: !isWall && !isEatenDot && <Dot />,
+            margin: bordersAndMargin.margin,
+            isDot: isDot,
+            isWall: false,
           }
         })
       )
     )
-  }, [x_pos, y_pos])
+  }, [x_pos, y_pos, walls])
+
+  useEffect(() => {
+    const dots = addDot(eatenDots, { x: x_pos, y: y_pos })
+    setEatenDots(dots)
+    if (dots.length !== 0 && checkBoardComplete(board)) {
+      setLvl(lvl + 1)
+      resetBoard()
+    }
+  }, [board])
+
+  useEffect(() => {
+    console.log("new LEVEL: ", lvl)
+    const newLevel = LEVELS[lvl]
+    if (newLevel) {
+      setWalls(newLevel.blocks)
+      return
+    }
+    onEndGame()
+  }, [lvl])
 
   useEffect(() => {
     setCellSize(getCellSize())
+    setWalls(LEVELS[lvl].blocks)
+    setX_pos(x_pos + 1)
+    setShowBoard(true)
   }, [])
 
   return (
@@ -233,17 +286,19 @@ export default ({ pause, score, onEndGame, onScoreChange }) => {
         <Score>{score}</Score>
       </Meta>
       <Wrapper>
-        <Board cellSize={cellSize}>
-          {board.map(row => (
-            <Row>
-              {row.map(cell => (
-                <Cell {...cell} cellSize={cellSize}>
-                  {cell.content}
-                </Cell>
-              ))}
-            </Row>
-          ))}
-        </Board>
+        {showBoard && (
+          <Board cellSize={cellSize}>
+            {board.map(row => (
+              <Row>
+                {row.map(cell => (
+                  <Cell {...cell} cellSize={cellSize}>
+                    {cell.content}
+                  </Cell>
+                ))}
+              </Row>
+            ))}
+          </Board>
+        )}
         <Controller>
           <Column>
             <Arrow onClick={goLeft}></Arrow>
