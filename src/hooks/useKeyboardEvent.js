@@ -4,6 +4,7 @@ export const useKeyboardEvent = (key, callback) => {
   useEffect(() => {
     const handler = function (event) {
       if (event.key === key) {
+        event.preventDefault()
         callback()
       }
     }

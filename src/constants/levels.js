@@ -19,7 +19,17 @@ const createBlocks = (rows, columns) => {
 export const LEVELS = {
   1: {
     name: "Lvl 1",
-    blocks: [
+    walls: [
+      // Top Wall
+      ...shiftY(0, shiftX(0, createBlocks(1, 28))),
+      // Bottom Wall
+      ...shiftY(30, shiftX(0, createBlocks(1, 28))),
+      // Left Wall
+      ...shiftY(0, shiftX(0, createBlocks(14, 1))),
+      ...shiftY(15, shiftX(0, createBlocks(15, 1))),
+      // Right Wall
+      ...shiftY(0, shiftX(27, createBlocks(14, 1))),
+      ...shiftY(15, shiftX(27, createBlocks(15, 1))),
       // Row 1
       ...shiftY(2, shiftX(2, createBlocks(3, 4))),
       ...shiftY(2, shiftX(7, createBlocks(3, 5))),

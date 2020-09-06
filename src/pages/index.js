@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react"
 import styled from "styled-components"
-import Board from "../components/Board"
+import Board from "../components/board/OptimizedBoard"
 import Menu from "../components/Menu"
 import EnterHighScore from "../components/EnterHighScore"
+import Game from "../components/game/Game"
 
 const Container = styled.div`
   margin: 0 auto;
@@ -48,7 +49,7 @@ export default () => {
   const [loaded, setLoaded] = useState(false)
   const [showTab, setShowTab] = useState("menu")
   const [pause, setPause] = useState(false)
-  const [sound, setSound] = useState(false)
+  // const [sound, setSound] = useState(false)
   const [score, setScore] = useState(0)
   const [highScores, setHighScores] = useState(getHighScores)
 
@@ -90,12 +91,12 @@ export default () => {
       )}
       <>
         {showTab === "pacman" && (
-          <Board
-            score={score}
-            pause={pause}
-            sound={sound}
-            onScoreChange={score => setScore(score)}
-            onEndGame={handleEndGame}
+          <Game
+          // score={score}
+          // pause={pause}
+          // sound={sound}
+          // onScoreChange={score => setScore(score)}
+          // onEndGame={handleEndGame}
           />
         )}
         <Buttons>
@@ -116,13 +117,13 @@ export default () => {
               </Button>
             </>
           )}
-          <Button
+          {/* <Button
             id="sound"
             onClick={() => setSound(!sound)}
             style={{ maxWidth: "130px", margin: "5px auto" }}
           >
             {sound ? "Sound On" : "Sound Off"}
-          </Button>
+          </Button> */}
           {showTab === "pacman" && (
             <Button id="quit" onClick={handleEndGame}>
               Quit

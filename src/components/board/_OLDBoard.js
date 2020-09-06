@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react"
 import styled from "styled-components"
 
-import { useKeyboardEvent } from "../hooks/useKeyboardEvent"
-import { WALL_COLOR } from "../constants/colors"
-import Pacman from "./Pacman"
-import Dot from "./Dot"
-import { LEVELS } from "../constants/levels"
+import { useKeyboardEvent } from "../../hooks/useKeyboardEvent"
+import { WALL_COLOR } from "../../constants/colors"
+import Pacman from "../Pacman"
+import Dot from "../Dot"
+import { LEVELS } from "../../constants/levels"
 
 const CELL_SIZE = 25
 
@@ -114,8 +114,8 @@ const getBordersAndMargin = (board, { x, y }) => {
 const getValidPosition = ({ board, x, y }) => {
   if (x === 0 || y === 0) return false
   if (x === board[0].length - 1 || y === board.length - 1) return false
-  const wall = board.find(row =>
-    row.find(cell => cell.index.x === x && cell.index.y === y && cell.isWall)
+  const wall = board.some(row =>
+    row.some(cell => cell.index.x === x && cell.index.y === y && cell.isWall)
   )
   return !wall
 }
